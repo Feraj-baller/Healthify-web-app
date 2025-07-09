@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Search, X, Loader2, Star, TrendingUp, Sparkles, Heart } from "lucide-react"
-import { openRouterService } from "@/lib/openrouter"
+import { AIService } from "@/lib/ai-service"
 import { usePreferences } from "@/lib/contexts/PreferencesContext"
 
 interface SearchModalProps {
@@ -37,15 +37,18 @@ export default function SearchModal({ isOpen, onClose, initialQuery = "" }: Sear
           console.error("Failed to load recent searches:", error)
         }
       }
-      // Prevent body scroll when modal is open
+      // Prevent body scroll and add blur effect when modal is open
       document.body.style.overflow = "hidden"
+      document.body.classList.add("search-modal-open")
     } else {
-      // Restore body scroll when modal is closed
+      // Restore body scroll and remove blur effect when modal is closed
       document.body.style.overflow = "unset"
+      document.body.classList.remove("search-modal-open")
     }
 
     return () => {
       document.body.style.overflow = "unset"
+      document.body.classList.remove("search-modal-open")
     }
   }, [isOpen])
 
@@ -67,7 +70,8 @@ export default function SearchModal({ isOpen, onClose, initialQuery = "" }: Sear
     setIsLoading(true)
 
     try {
-      const searchResults = await openRouterService.searchProducts(query)
+      // Use centralized AI service for search
+      const searchResults = await AIService.searchProducts(query)
       setResults(searchResults)
 
       if (searchResults.length > 0) {
@@ -146,6 +150,7 @@ export default function SearchModal({ isOpen, onClose, initialQuery = "" }: Sear
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("header.search")}
             className="flex-1 text-base sm:text-lg bg-transparent border-none outline-none text-gray-900 dark:text-slate-100 placeholder-gray-500 dark:placeholder-slate-400 min-w-0"
+            style={{ cursor: "text" }}
             autoFocus
           />
           {isLoading && <Loader2 className="w-5 h-5 animate-spin text-emerald-500 flex-shrink-0" />}
@@ -279,7 +284,7 @@ export default function SearchModal({ isOpen, onClose, initialQuery = "" }: Sear
             <div className="p-4 sm:p-6">
               <h3 className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Sparkles className="w-4 h-4" />
-                Search Results
+                AI-Powered Results
               </h3>
               <div className="space-y-3">
                 {results.map((result, index) => (
@@ -333,8 +338,8 @@ export default function SearchModal({ isOpen, onClose, initialQuery = "" }: Sear
           {/* No Results */}
           {query.length > 1 && !isLoading && results.length === 0 && !selectedResult && (
             <div className="p-8 sm:p-12 text-center">
-              <div className="text-4xl mb-4">🔍</div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-2">No results found</h3>
+              <div className="text-4xl mb-4">🤖</div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-2">AI couldn't find results</h3>
               <p className="text-gray-600 dark:text-slate-400 mb-4">
                 Try searching for products, brands, or health topics
               </p>
@@ -355,10 +360,10 @@ export default function SearchModal({ isOpen, onClose, initialQuery = "" }: Sear
           {/* Empty State */}
           {!query && recentSearches.length === 0 && !selectedResult && (
             <div className="p-8 sm:p-12 text-center">
-              <div className="text-4xl mb-4">🥗</div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-2">Search Healthify</h3>
+              <div className="text-4xl mb-4">🤖</div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-slate-100 mb-2">AI-Powered Search</h3>
               <p className="text-gray-600 dark:text-slate-400 mb-6">
-                Find products, brands, nutrition info, and health tips
+                Find products, brands, nutrition info, and health tips with AI assistance
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {popularSuggestions.map((suggestion) => (

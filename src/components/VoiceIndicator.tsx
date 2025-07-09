@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Mic, MicOff } from "lucide-react"
-import { openRouterService } from "@/lib/openrouter"
+import { AIService } from "@/lib/ai-service"
 
 interface VoiceIndicatorProps {
   onClose: () => void
@@ -31,7 +31,8 @@ export default function VoiceIndicator({ onClose, onTranscription }: VoiceIndica
           const audioBlob = new Blob(audioChunks, { type: "audio/wav" })
 
           try {
-            const transcription = await openRouterService.transcribeAudio(audioBlob)
+            // Use centralized AI service for transcription
+            const transcription = await AIService.transcribeAudio(audioBlob)
             onTranscription(transcription)
           } catch (error) {
             console.error("Transcription failed:", error)
@@ -54,9 +55,14 @@ export default function VoiceIndicator({ onClose, onTranscription }: VoiceIndica
         }, 5000)
       } catch (error) {
         console.error("Failed to start recording:", error)
-        // Simulate voice input for demo
-        setTimeout(() => {
-          onTranscription("Greek yogurt nutrition")
+        // Simulate voice input for demo using AI service
+        setTimeout(async () => {
+          try {
+            const fallbackTranscription = await AIService.transcribeAudio(new Blob())
+            onTranscription(fallbackTranscription)
+          } catch {
+            onTranscription("Greek yogurt nutrition")
+          }
           onClose()
         }, 2000)
       }
@@ -82,7 +88,7 @@ export default function VoiceIndicator({ onClose, onTranscription }: VoiceIndica
         {isProcessing ? (
           <>
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-            <span className="font-semibold">Processing...</span>
+            <span className="font-semibold">AI Processing...</span>
           </>
         ) : isListening ? (
           <>

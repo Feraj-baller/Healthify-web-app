@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Healthify - Your Personal Health Command Center",
   description: "AI-powered health tracking and nutrition analysis platform",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
